@@ -4,18 +4,26 @@ import com.taxi.trip.model.Trip;
 import com.taxi.trip.repository.TripRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestTemplate;
+
+import java.util.List;
+import java.util.Map;
 
 @Service
 public class TripService {
     private final TripRepository tripRepository;
     private final RestTemplate restTemplate;
 
+    private final RestClient.Builder restClientBuilder;
+
     private static final String USER_SERVICE_URL = "http://localhost:8081";
 
-    public TripService(TripRepository tripRepository, RestTemplate restTemplate) {
+    public TripService(TripRepository tripRepository, RestTemplate restTemplate,
+                       RestClient.Builder restClientBuilder) {
         this.tripRepository = tripRepository;
         this.restTemplate = restTemplate;
+        this.restClientBuilder = restClientBuilder;
     }
 
     @Transactional
@@ -55,8 +63,16 @@ public class TripService {
     }
 
     private Long findAvailableDriver() {
-        // TODO: get free drivers list
-        return 1L; // mock
+        try {
+            List<Map> drivers = restTemplate.getForObject(USER_SERVICE_URL + "/drivers/available", List.class);
+            if (drivers != null && !drivers.isEmpty()) {
+                Map<String, Object> driver = drivers.get(0);
+                return Long.valueOf(driver.get("id").toString());
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to find available driver: " + e.getMessage());
+        }
+        return null;
     }
 
     private Double calculatePrice(String origin, String destination) {
@@ -67,7 +83,16 @@ public class TripService {
     private void updateDriverStatus(Long driverId, String status) {
         try {
             String url = USER_SERVICE_URL + "/drivers/" + driverId + "/status";
-            restTemplate.patchForObject(url, "{\"status\":\"" + status + "\"}", String.class);
+
+            // Создаём тело запроса
+            Map<String, String> body = Map.of("status", status);
+
+            // Создаём HTTP-entity с заголовками
+            org.springframework.http.HttpEntity<Map<String, String>> requestEntity =
+                    new org.springframework.http.HttpEntity<>(body);
+
+            // Используем exchange с методом PATCH
+            restTemplate.exchange(url, org.springframework.http.HttpMethod.PUT, requestEntity, String.class);
         } catch (Exception e) {
             throw new RuntimeException("Failed to update driver status: " + e.getMessage());
         }

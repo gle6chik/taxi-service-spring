@@ -5,6 +5,8 @@ import com.taxi.user.repository.DriverRepository;
 import org.springframework.web.bind.annotation.*;
 import lombok.Data;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/drivers")
 public class DriverController {
@@ -25,12 +27,17 @@ public class DriverController {
                 .orElseThrow(() -> new RuntimeException("Driver not found"));
     }
 
-    @PatchMapping("/{id}/status")
+    @PutMapping("/{id}/status")
     public Driver updateStatus(@PathVariable Long id, @RequestBody StatusUpdate request) {
         Driver driver = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Driver not found"));
         driver.setStatus(request.getStatus());
         return repository.save(driver);
+    }
+
+    @GetMapping("/available")
+    public List<Driver> getAvailableDrivers() {
+        return repository.findByStatus("FREE");
     }
 
     @Data
