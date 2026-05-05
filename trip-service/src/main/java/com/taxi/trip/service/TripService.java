@@ -27,7 +27,7 @@ public class TripService {
     }
 
     @Transactional
-    public Trip createTrip(Long passengerId, String origin, String destination) {
+    public Trip createTrip(Long passengerId, String origin, String destination, Double distance, String tariffType) {
         // Checking passenger existing
         checkPassengerExists(passengerId);
 
@@ -44,7 +44,9 @@ public class TripService {
         trip.setOrigin(origin);
         trip.setDestination(destination);
         trip.setStatus("DRIVER_ASSIGNED");
-        trip.setPrice(calculatePrice(origin, destination));
+        trip.setPrice(calculatePrice(distance, tariffType));
+        trip.setDistance(distance);
+        trip.setTariffType(tariffType);
 
         Trip savedTrip = tripRepository.save(trip);
 
@@ -75,9 +77,20 @@ public class TripService {
         return null;
     }
 
-    private Double calculatePrice(String origin, String destination) {
-        // TODO: calculate trip price (distance * tariff)
-        return 1000D; // Mock
+    private Double calculatePrice(Double distance, String tariffType) {
+        // Price per kilometer
+        double ECONOMY_RATE = 50.0;
+        double COMFORT_RATE = 100.0;
+        double BUSINESS_RATE = 200.0;
+
+        double rate = switch (tariffType != null ? tariffType : "ECONOMY") {
+            case "COMFORT" -> COMFORT_RATE;
+            case "BUSINESS" -> BUSINESS_RATE;
+            default -> ECONOMY_RATE;
+        };
+
+        double price = distance * rate;
+        return Math.round(price * 100.0) / 100.0;
     }
 
     private void updateDriverStatus(Long driverId, String status) {

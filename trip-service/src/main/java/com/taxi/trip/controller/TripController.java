@@ -23,7 +23,9 @@ public class TripController {
         return tripService.createTrip(
                 request.getPassengerId(),
                 request.getOrigin(),
-                request.getDestination()
+                request.getDestination(),
+                request.getDistance(),
+                request.getTariffType()
         );
     }
 
@@ -52,6 +54,8 @@ public class TripController {
         private Long passengerId;
         private String origin;
         private String destination;
+        private Double distance;
+        private String tariffType;
     }
 
     @Data

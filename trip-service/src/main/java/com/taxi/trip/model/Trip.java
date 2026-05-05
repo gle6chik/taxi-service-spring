@@ -27,9 +27,14 @@ public class Trip {
     @Column(nullable = false)
     private String destination;
 
+    private Double distance;
+
+    @Column(name = "tariff_type")
+    private String tariffType; // ECONOMY, COMFORT, BUSINESS
+
     private Double price;
 
-    private Integer rating; // 1-5 звёзд
+    private Integer rating; // 1-5 stars
 
     @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
