@@ -2,6 +2,7 @@ package com.taxi.trip.controller;
 
 import com.taxi.trip.model.Trip;
 import com.taxi.trip.repository.TripRepository;
+import com.taxi.trip.service.TripService;
 import lombok.Data;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -10,26 +11,20 @@ import java.util.List;
 @RequestMapping("/trips")
 public class TripController {
     private final TripRepository repository;
+    private final TripService tripService;
 
-    public TripController(TripRepository repository) {
+    public TripController(TripRepository repository, TripService tripService) {
         this.repository = repository;
-    }
-
-    @Data
-    static class TripRequest {
-        private Long passengerId;
-        private String origin;
-        private String destination;
+        this.tripService = tripService;
     }
 
     @PostMapping
     public Trip create(@RequestBody TripRequest request) {
-        Trip trip = new Trip();
-        trip.setPassengerId(request.getPassengerId());
-        trip.setOrigin(request.getOrigin());
-        trip.setDestination(request.getDestination());
-        trip.setStatus("CREATED");
-        return repository.save(trip);
+        return tripService.createTrip(
+                request.getPassengerId(),
+                request.getOrigin(),
+                request.getDestination()
+        );
     }
 
     @GetMapping("/{id}")
@@ -43,11 +38,6 @@ public class TripController {
         return repository.findByPassengerId(passengerId);
     }
 
-    @Data
-    static class StatusUpdate {
-        private String status;
-    }
-
     @PatchMapping("/{id}/status")
     public Trip updateStatus(@PathVariable Long id, @RequestBody StatusUpdate status) {
         Trip trip = repository.findById(id)
@@ -55,5 +45,17 @@ public class TripController {
         trip.setStatus(status.getStatus());
         trip.setUpdatedAt(java.time.LocalDateTime.now());
         return repository.save(trip);
+    }
+
+    @Data
+    static class TripRequest {
+        private Long passengerId;
+        private String origin;
+        private String destination;
+    }
+
+    @Data
+    static class StatusUpdate {
+        private String status;
     }
 }
