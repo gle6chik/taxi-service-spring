@@ -3,6 +3,7 @@ package com.taxi.user.controller;
 import com.taxi.user.model.Driver;
 import com.taxi.user.repository.DriverRepository;
 import org.springframework.web.bind.annotation.*;
+import lombok.Data;
 
 @RestController
 @RequestMapping("/drivers")
@@ -25,17 +26,15 @@ public class DriverController {
     }
 
     @PatchMapping("/{id}/status")
-    public Driver updateStatus(@PathVariable Long id, @RequestBody StatusUpdate status) {
+    public Driver updateStatus(@PathVariable Long id, @RequestBody StatusUpdate request) {
         Driver driver = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Driver not found"));
-        driver.setStatus(status.getStatus());
+        driver.setStatus(request.getStatus());
         return repository.save(driver);
     }
-}
 
-class StatusUpdate {
-    private String status;
-
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
+    @Data
+    static class StatusUpdate {
+        private String status;
+    }
 }
