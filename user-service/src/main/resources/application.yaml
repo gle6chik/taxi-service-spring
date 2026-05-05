@@ -6,7 +6,7 @@ spring:
     name: user-service
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/taxi_db
+    url: jdbc:postgresql://localhost:5432/taxi_db_user
     username: postgres
     password: postgres
 
