@@ -31,8 +31,8 @@ public class TripService {
         // Checking passenger existing
         checkPassengerExists(passengerId);
 
-        // Search free driver
-        Long driverId = findAvailableDriver();
+        // Atomically find and assign driver
+        Long driverId = findAndAssignDriver();
         if (driverId == null) {
             throw new RuntimeException("No available drivers");
         }
@@ -48,12 +48,7 @@ public class TripService {
         trip.setDistance(distance);
         trip.setTariffType(tariffType);
 
-        Trip savedTrip = tripRepository.save(trip);
-
-        // Update driver status to BUSY
-        updateDriverStatus(driverId, "BUSY");
-
-        return savedTrip;
+        return tripRepository.save(trip);
     }
 
     private void checkPassengerExists(Long passengerId) {
@@ -64,15 +59,15 @@ public class TripService {
         }
     }
 
-    private Long findAvailableDriver() {
+    private Long findAndAssignDriver() {
         try {
-            List<Map> drivers = restTemplate.getForObject(USER_SERVICE_URL + "/drivers/available", List.class);
-            if (drivers != null && !drivers.isEmpty()) {
-                Map<String, Object> driver = drivers.get(0);
-                return Long.valueOf(driver.get("id").toString());
+            String url = USER_SERVICE_URL + "/drivers/assign";
+            Map<String, Object> response = restTemplate.postForObject(url, null, Map.class);
+            if (response != null) {
+                return Long.valueOf(response.get("id").toString());
             }
         } catch (Exception e) {
-            throw new RuntimeException("Failed to find available driver: " + e.getMessage());
+            throw new RuntimeException("Failed to assign driver: " + e.getMessage());
         }
         return null;
     }
@@ -91,23 +86,5 @@ public class TripService {
 
         double price = distance * rate;
         return Math.round(price * 100.0) / 100.0;
-    }
-
-    private void updateDriverStatus(Long driverId, String status) {
-        try {
-            String url = USER_SERVICE_URL + "/drivers/" + driverId + "/status";
-
-            // Создаём тело запроса
-            Map<String, String> body = Map.of("status", status);
-
-            // Создаём HTTP-entity с заголовками
-            org.springframework.http.HttpEntity<Map<String, String>> requestEntity =
-                    new org.springframework.http.HttpEntity<>(body);
-
-            // Используем exchange с методом PATCH
-            restTemplate.exchange(url, org.springframework.http.HttpMethod.PUT, requestEntity, String.class);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to update driver status: " + e.getMessage());
-        }
     }
 }

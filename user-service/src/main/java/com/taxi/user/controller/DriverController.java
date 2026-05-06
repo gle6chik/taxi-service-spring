@@ -2,6 +2,7 @@ package com.taxi.user.controller;
 
 import com.taxi.user.model.Driver;
 import com.taxi.user.repository.DriverRepository;
+import com.taxi.user.service.DriverService;
 import org.springframework.web.bind.annotation.*;
 import lombok.Data;
 
@@ -12,8 +13,12 @@ import java.util.List;
 public class DriverController {
     private final DriverRepository repository;
 
-    public DriverController(DriverRepository repository) {
+    private final DriverService driverService;
+
+    public DriverController(DriverRepository repository,
+                            DriverService driverService) {
         this.repository = repository;
+        this.driverService = driverService;
     }
 
     @PostMapping
@@ -38,6 +43,11 @@ public class DriverController {
     @GetMapping("/available")
     public List<Driver> getAvailableDrivers() {
         return repository.findByStatus("FREE");
+    }
+
+    @PostMapping("/assign")
+    public Driver assignFirstAvailable() {
+        return driverService.assignFirstAvailable();
     }
 
     @Data
