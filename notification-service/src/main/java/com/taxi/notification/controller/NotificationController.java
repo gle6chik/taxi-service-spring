@@ -1,4 +1,4 @@
-package com.taxi.notification;
+package com.taxi.notification.controller;
 
 import com.taxi.notification.model.NotificationTask;
 import com.taxi.notification.repository.NotificationTaskRepository;

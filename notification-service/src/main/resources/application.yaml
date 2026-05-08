@@ -6,7 +6,7 @@ spring:
     name: notification-service
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/taxi_db_notification
+    url: jdbc:postgresql://localhost:5432/taxi_db
     username: postgres
     password: postgres
 
