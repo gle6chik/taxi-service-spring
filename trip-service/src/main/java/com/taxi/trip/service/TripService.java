@@ -48,7 +48,12 @@ public class TripService {
         trip.setDistance(distance);
         trip.setTariffType(tariffType);
 
-        return tripRepository.save(trip);
+        Trip savedTrip = tripRepository.save(trip);
+
+        // Send task in queue
+        sendNotification(savedTrip.getId(), driverId, "DRIVER", "Trip #" + savedTrip.getId() + " started");
+
+        return savedTrip;
     }
 
     private void checkPassengerExists(Long passengerId) {
@@ -86,5 +91,21 @@ public class TripService {
 
         double price = distance * rate;
         return Math.round(price * 100.0) / 100.0;
+    }
+
+    private void sendNotification(Long tripId, Long recipientId,
+                                  String recipientType, String message) {
+        try {
+            String url = "http://localhost:8083/notifications";
+            Map<String, Object> body = Map.of(
+                    "tripId", tripId,
+                    "recipientId", recipientId,
+                    "recipientType", recipientType,
+                    "message", message
+            );
+            restTemplate.postForObject(url, body, Object.class);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to queue notification: " + e.getMessage());
+        }
     }
 }

@@ -6,6 +6,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
+
+import java.util.Map;
 
 @Service
 public class NotificationProcessor {
@@ -14,9 +17,14 @@ public class NotificationProcessor {
     private static final int RIDE_DURATION_MS = 15_000;
 
     private final NotificationTaskRepository repository;
+    private final RestTemplate restTemplate;
 
-    public NotificationProcessor(NotificationTaskRepository repository) {
+    private static final String TRIP_SERVICE_URL = "http://localhost:8082";
+    private static final String USER_SERVICE_URL = "http://localhost:8081";
+
+    public NotificationProcessor(NotificationTaskRepository repository, RestTemplate restTemplate) {
         this.repository = repository;
+        this.restTemplate = restTemplate;
     }
 
     @Transactional
@@ -30,9 +38,20 @@ public class NotificationProcessor {
 
             // Simulate ride if this is a trip start notification
             if (task.getMessage() != null && task.getMessage().contains("started")) {
+
+                // Update trip status to STARTED
+                updateTripStatus(task.getTripId(), "STARTED");
+
                 log.info("[TASK-{}] Trip #{} started. Simulating ride for {} seconds...",
                         task.getId(), task.getTripId(), RIDE_DURATION_MS / 1000);
                 Thread.sleep(RIDE_DURATION_MS);
+
+                // Update trip status to COMPLETED
+                updateTripStatus(task.getTripId(), "COMPLETED");
+
+                // Update driver status to FREE
+                updateDriverStatus(task.getRecipientId(), "FREE");
+
                 log.info("[TASK-{}] Trip #{} completed!", task.getId(), task.getTripId());
             }
 
@@ -45,6 +64,28 @@ public class NotificationProcessor {
         } catch (Exception e) {
             log.error("[TASK-{}] Failed: {}", task.getId(), e.getMessage());
             handleFailure(task);
+        }
+    }
+
+    private void updateTripStatus(Long tripId, String status) {
+        try {
+            String url = TRIP_SERVICE_URL + "/trips/" + tripId + "/status";
+            Map<String, String> body = Map.of("status", status);
+            restTemplate.patchForObject(url, body, Object.class);
+            log.info("[TRIP-{}] Status updated to {}", tripId, status);
+        } catch (Exception e) {
+            log.error("Failed to update trip {} status: {}", tripId, e.getMessage());
+        }
+    }
+
+    private void updateDriverStatus(Long driverId, String status) {
+        try {
+            String url = USER_SERVICE_URL + "/drivers/" + driverId + "/status";
+            Map<String, String> body = Map.of("status", status);
+            restTemplate.put(url, body);
+            log.info("[DRIVER-{}] Status updated to {}", driverId, status);
+        } catch (Exception e) {
+            log.error("Failed to update driver {} status: {}", driverId, e.getMessage());
         }
     }
 
@@ -61,10 +102,5 @@ public class NotificationProcessor {
             log.error("[TASK-{}] Permanently failed after {} attempts",
                     task.getId(), MAX_RETRIES);
         }
-    }
-
-    private void simulateWork(int minMs, int maxMs) throws InterruptedException {
-        long delay = minMs + (long)(Math.random() * (maxMs - minMs));
-        Thread.sleep(delay);
     }
 }
