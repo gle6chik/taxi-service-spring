@@ -19,9 +19,9 @@ public class NotificationProcessor {
     private final NotificationTaskRepository repository;
     private final RestTemplate restTemplate;
 
-    private static final String TRIP_SERVICE_URL = "http://localhost:8082";
-    private static final String USER_SERVICE_URL = "http://localhost:8081";
-    private static final String NOTIFICATION_SERVICE_URL = "http://localhost:8083";
+    private static final String TRIP_SERVICE_URL = "http://trip-service:8082";
+    private static final String USER_SERVICE_URL = "http://user-service:8081";
+    private static final String NOTIFICATION_SERVICE_URL = "http://notification-service:8083";
 
     public NotificationProcessor(NotificationTaskRepository repository, RestTemplate restTemplate) {
         this.repository = repository;

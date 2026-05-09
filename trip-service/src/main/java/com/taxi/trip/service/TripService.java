@@ -13,8 +13,8 @@ public class TripService {
     private final TripRepository tripRepository;
     private final RestTemplate restTemplate;
 
-    private static final String USER_SERVICE_URL = "http://localhost:8081";
-    private static final String NOTIFICATION_SERVICE_URL = "http://localhost:8083";
+    private static final String USER_SERVICE_URL = "http://user-service:8081";
+    private static final String NOTIFICATION_SERVICE_URL = "http://notification-service:8083";
 
     public TripService(TripRepository tripRepository, RestTemplate restTemplate) {
         this.tripRepository = tripRepository;
@@ -72,7 +72,7 @@ public class TripService {
     private void sendNotification(Long tripId, Long recipientId,
                                   String recipientType, String message) {
         try {
-            String url = "http://localhost:8083/notifications";
+            String url = NOTIFICATION_SERVICE_URL + "/notifications";
             Map<String, Object> body = Map.of(
                     "tripId", tripId,
                     "recipientId", recipientId,
