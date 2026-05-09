@@ -7,6 +7,7 @@ import lombok.Data;
 import org.aspectj.apache.bcel.classfile.annotation.RuntimeTypeAnnos;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/trips")
@@ -71,6 +72,18 @@ public class TripController {
         trip.setRating(rating.getRating());
         trip.setUpdatedAt(java.time.LocalDateTime.now());
         return repository.save(trip);
+    }
+
+    @GetMapping("/stats")
+    public Map<String, Object> getStats(@RequestParam("passenger_id") Long passengerId) {
+        long totalTrips = repository.countByPassengerId(passengerId);
+        double avgPrice = repository.getAveragePriceByPassengerId(passengerId);
+
+        return Map.of(
+                "passengerId", passengerId,
+                "totalTrips", totalTrips,
+                "averagePrice", Math.round(avgPrice * 100.0) / 100.0
+        );
     }
 
     @Data
