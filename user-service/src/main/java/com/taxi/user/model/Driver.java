@@ -20,6 +20,9 @@ public class Driver implements java.io.Serializable {
 
     private String phone;
 
+    @Column(nullable = false)
+    private String password;
+
     @Column(name = "license_number")
     private String licenseNumber;
 
