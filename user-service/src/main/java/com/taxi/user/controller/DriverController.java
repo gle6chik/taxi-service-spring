@@ -32,7 +32,7 @@ public class DriverController {
                 .orElseThrow(() -> new RuntimeException("Driver not found"));
     }
 
-    @PutMapping("/{id}/status")
+    @PatchMapping("/{id}/status")
     public Driver updateStatus(@PathVariable Long id, @RequestBody StatusUpdate request) {
         Driver driver = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Driver not found"));

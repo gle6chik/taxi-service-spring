@@ -44,7 +44,6 @@ public class NotificationWorker implements Runnable {
                     if (taskOpt.isPresent()) {
                         NotificationTask task = taskOpt.get();
                         repository.updateStatus(task.getId(), "PROCESSING");
-                        log.debug("{} locked task #{}", workerName, task.getId());
                         processor.processTask(task);
                     }
                     return null;
