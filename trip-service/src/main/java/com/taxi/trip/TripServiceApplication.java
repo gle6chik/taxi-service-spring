@@ -16,5 +16,4 @@ public class TripServiceApplication {
     public RestTemplate restTemplate() {
         return new RestTemplate();
     }
-
 }
