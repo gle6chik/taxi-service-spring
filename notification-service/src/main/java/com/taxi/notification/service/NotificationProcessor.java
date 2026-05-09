@@ -33,16 +33,13 @@ public class NotificationProcessor {
         try {
             log.info("[TASK-{}] Processing: {}", task.getId(), task.getMessage());
 
-            // Search driver
             if (task.getMessage() != null && task.getMessage().contains("Searching for a driver")) {
                 findAndAssignDriver(task);
                 return;
             }
 
-            // Send notification imitation
             Thread.sleep(1000 + (int)(Math.random() * 2000));
 
-            // Ride imitation (dor driver only)
             if (task.getMessage() != null
                     && task.getMessage().contains("started")
                     && "DRIVER".equals(task.getRecipientType())) {
@@ -51,7 +48,6 @@ public class NotificationProcessor {
 
                 updateTripStatus(task.getTripId(), "STARTED");
 
-                // Ride is started (to passenger)
                 createNotification(task.getTripId(), passengerId, "PASSENGER",
                         "Trip #" + task.getTripId() + " started!");
 
@@ -60,7 +56,6 @@ public class NotificationProcessor {
                 updateTripStatus(task.getTripId(), "COMPLETED");
                 updateDriverStatus(task.getRecipientId(), "FREE");
 
-                // Ride is completed (for driver and passenger)
                 createNotification(task.getTripId(), passengerId, "PASSENGER",
                         "Trip #" + task.getTripId() + " completed.");
                 createNotification(task.getTripId(), task.getRecipientId(), "DRIVER",
@@ -81,7 +76,6 @@ public class NotificationProcessor {
     private void findAndAssignDriver(NotificationTask task) {
         int attempt = task.getAttemptCount() + 1;
 
-        // Search turn
         createNotification(task.getTripId(), task.getRecipientId(), "PASSENGER",
                 "Searching driver... Attempt " + attempt + " of " + MAX_RETRIES);
 
@@ -95,11 +89,9 @@ public class NotificationProcessor {
                 updateTripDriver(task.getTripId(), driverId);
                 updateTripStatus(task.getTripId(), "DRIVER_ASSIGNED");
 
-                // Driver is assigned (for passenger)
                 createNotification(task.getTripId(), task.getRecipientId(), "PASSENGER",
                         "Driver found! Trip #" + task.getTripId() + " starts soon.");
 
-                // Rider is started (for driver)
                 createNotification(task.getTripId(), driverId, "DRIVER",
                         "Trip #" + task.getTripId() + " started");
 
@@ -110,9 +102,7 @@ public class NotificationProcessor {
             log.warn("[TASK-{}] Error searching driver: {}", task.getId(), e.getMessage());
         }
 
-        // Driver not found
         if (attempt >= MAX_RETRIES) {
-            // No available drivers (for passenger)
             createNotification(task.getTripId(), task.getRecipientId(), "PASSENGER",
                     "No drivers available. Trip #" + task.getTripId() + " cancelled.");
             updateTripStatus(task.getTripId(), "CANCELLED");

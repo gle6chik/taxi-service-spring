@@ -1,7 +1,9 @@
 package com.taxi.trip.service;
 
+import com.taxi.trip.TripServiceApplication;
 import com.taxi.trip.model.Trip;
 import com.taxi.trip.repository.TripRepository;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
