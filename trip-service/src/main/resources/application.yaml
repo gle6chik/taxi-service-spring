@@ -6,7 +6,7 @@ spring:
     name: trip-service
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/taxi_db_trip
+    url: jdbc:postgresql://localhost:5432/taxi_db
     username: postgres
     password: postgres
 
@@ -14,4 +14,3 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: true
-

@@ -49,6 +49,20 @@ public class TripController {
         return repository.save(trip);
     }
 
+    @PatchMapping("/{id}/driver")
+    public Trip updateDriver(@PathVariable Long id, @RequestBody DriverUpdate update) {
+        Trip trip = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Trip not found"));
+        trip.setDriverId(update.getDriverId());
+        trip.setUpdatedAt(java.time.LocalDateTime.now());
+        return repository.save(trip);
+    }
+
+    @Data
+    static class DriverUpdate {
+        private Long driverId;
+    }
+
     @Data
     static class TripRequest {
         private Long passengerId;
