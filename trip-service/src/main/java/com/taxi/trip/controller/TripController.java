@@ -4,6 +4,7 @@ import com.taxi.trip.model.Trip;
 import com.taxi.trip.repository.TripRepository;
 import com.taxi.trip.service.TripService;
 import lombok.Data;
+import org.aspectj.apache.bcel.classfile.annotation.RuntimeTypeAnnos;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
@@ -56,6 +57,25 @@ public class TripController {
         trip.setDriverId(update.getDriverId());
         trip.setUpdatedAt(java.time.LocalDateTime.now());
         return repository.save(trip);
+    }
+
+    @PatchMapping("/{id}/rating")
+    public Trip updateRating(@PathVariable Long id, @RequestBody RatingUpdate rating) {
+        Trip trip = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Trip not found"));
+
+        if (rating.getRating() < 1 || rating.getRating() > 5) {
+            throw new RuntimeException("Rating must be between 1 and 5");
+        }
+
+        trip.setRating(rating.getRating());
+        trip.setUpdatedAt(java.time.LocalDateTime.now());
+        return repository.save(trip);
+    }
+
+    @Data
+    static class RatingUpdate {
+        private Integer rating;
     }
 
     @Data
