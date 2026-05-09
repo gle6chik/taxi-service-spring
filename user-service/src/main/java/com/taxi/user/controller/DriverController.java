@@ -3,6 +3,8 @@ package com.taxi.user.controller;
 import com.taxi.user.model.Driver;
 import com.taxi.user.repository.DriverRepository;
 import com.taxi.user.service.DriverService;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.web.bind.annotation.*;
 import lombok.Data;
 
@@ -33,6 +35,7 @@ public class DriverController {
     }
 
     @PatchMapping("/{id}/status")
+    @CacheEvict(value = "availableDrivers", allEntries = true)
     public Driver updateStatus(@PathVariable Long id, @RequestBody StatusUpdate request) {
         Driver driver = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Driver not found"));
@@ -41,11 +44,13 @@ public class DriverController {
     }
 
     @GetMapping("/available")
+    @Cacheable("availableDrivers")
     public List<Driver> getAvailableDrivers() {
         return repository.findByStatus("FREE");
     }
 
     @PostMapping("/assign")
+    @CacheEvict(value = "availableDrivers", allEntries = true)
     public Driver assignFirstAvailable() {
         return driverService.assignFirstAvailable();
     }
