@@ -5,7 +5,9 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "trips")
+@Table(name = "trips", indexes = {
+        @Index(name = "idx_trips_status", columnList = "status")
+})
 @Data
 public class Trip {
     @Id

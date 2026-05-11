@@ -38,7 +38,7 @@ public class NotificationProcessor {
                 return;
             }
 
-            Thread.sleep(1000 + (int)(Math.random() * 2000));
+            // Thread.sleep(1000 + (int)(Math.random() * 2000));
 
             if (task.getMessage() != null
                     && task.getMessage().contains("started")
